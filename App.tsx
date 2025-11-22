@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { Badge } from './components/Badge';
 import { PromptCard } from './components/PromptCard';
 import { PromptForm } from './components/PromptForm';
 import { BulkUploadDialog, BulkUploadOptions } from './components/BulkUploadDialog';
+import { ConfirmDialog } from './components/ConfirmDialog';
+import { Toast } from './components/Toast';
 import { Button } from './components/Button';
 import { Prompt, Category, AiModel, PromptFilter } from './types';
 import { getPrompts, savePrompts } from './services/storage';
@@ -24,6 +25,8 @@ const App: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Load Data
   useEffect(() => {
@@ -67,12 +70,22 @@ const App: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this prompt?')) {
-      const newPrompts = prompts.filter(p => p.id !== id);
-      setPrompts(newPrompts);
-      if (newPrompts.length === 0) localStorage.removeItem('talqena_prompts_v1'); // clean up if empty
-      else savePrompts(newPrompts);
-    }
+    setDeleteConfirmId(id);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteConfirmId) return;
+
+    const newPrompts = prompts.filter(p => p.id !== deleteConfirmId);
+    setPrompts(newPrompts);
+    if (newPrompts.length === 0) localStorage.removeItem('talqena_prompts_v1'); // clean up if empty
+    else savePrompts(newPrompts);
+
+    setDeleteConfirmId(null);
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmId(null);
   };
 
   const handleToggleFavorite = (id: string) => {
@@ -81,7 +94,7 @@ const App: React.FC = () => {
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    // Could add a toast notification here
+    setToastMessage('Prompt copied to clipboard!');
   };
 
   const openCreate = () => {
@@ -186,7 +199,6 @@ const App: React.FC = () => {
 
         {/* Top Bar */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <Badge color="blue"> Test</Badge>
           <div className="relative flex-1 max-w-xl mt-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text-dim" size={18} />
             <input
@@ -307,6 +319,26 @@ const App: React.FC = () => {
           onConfirm={handleBulkUploadConfirm}
           onCancel={handleBulkUploadCancel}
           availableTags={Array.from(new Set(prompts.flatMap(p => p.tags)))}
+        />
+      )}
+
+      {deleteConfirmId && (
+        <ConfirmDialog
+          title="Delete Prompt"
+          message="Are you sure you want to delete this prompt? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+          variant="danger"
+        />
+      )}
+
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type="success"
+          onClose={() => setToastMessage(null)}
         />
       )}
     </div>

@@ -5,7 +5,7 @@ import { PromptForm } from './components/PromptForm';
 import { Button } from './components/Button';
 import { Prompt, Category, AiModel, PromptFilter } from './types';
 import { getPrompts, savePrompts } from './services/storage';
-import { Search, Plus, SlidersHorizontal, Star, Menu, X } from 'lucide-react';
+import { Search, Plus, SlidersHorizontal, Star, Menu, X, Upload } from 'lucide-react';
 
 const App: React.FC = () => {
   // State
@@ -90,6 +90,47 @@ const App: React.FC = () => {
     setIsFormOpen(true);
   };
 
+  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+      if (lines.length === 0) {
+        alert('No prompts found in file.');
+        return;
+      }
+
+      const confirmed = window.confirm(`Import ${lines.length} prompts from "${file.name}"?`);
+      if (!confirmed) return;
+
+      const now = Date.now();
+      const newPrompts: Prompt[] = lines.map((line, index) => ({
+        id: crypto.randomUUID(),
+        title: `Imported Prompt ${index + 1}`,
+        content: line,
+        description: '',
+        category: Category.OTHER,
+        model: AiModel.GEMINI_2_5_FLASH,
+        tags: [],
+        createdAt: now + index,
+        updatedAt: now + index,
+        isFavorite: false
+      }));
+
+      setPrompts([...newPrompts, ...prompts]);
+      alert(`Successfully imported ${newPrompts.length} prompts!`);
+    } catch (error) {
+      console.error('Error reading file:', error);
+      alert('Failed to read file. Please try again.');
+    }
+
+    // Reset input
+    e.target.value = '';
+  };
+
   // Filtering Logic
   const filteredPrompts = useMemo(() => {
     return prompts.filter(p => {
@@ -145,6 +186,22 @@ const App: React.FC = () => {
             >
               <Plus size={18} className="stroke-[3]" />
               <span>New Prompt</span>
+            </button>
+
+            <input
+              type="file"
+              accept=".txt"
+              onChange={handleBulkUpload}
+              className="hidden"
+              id="bulk-upload-input"
+            />
+            <button
+              onClick={() => document.getElementById('bulk-upload-input')?.click()}
+              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-theme-element border border-theme-border text-theme-text hover:bg-theme-border transition-colors"
+              title="Bulk Upload from TXT"
+            >
+              <Upload size={18} />
+              <span>Bulk Upload</span>
             </button>
 
             <button

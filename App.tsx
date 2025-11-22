@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Sidebar } from './components/Sidebar';
+import { Badge } from './components/Badge';
 import { PromptCard } from './components/PromptCard';
 import { PromptForm } from './components/PromptForm';
+import { BulkUploadDialog, BulkUploadOptions } from './components/BulkUploadDialog';
 import { Button } from './components/Button';
 import { Prompt, Category, AiModel, PromptFilter } from './types';
 import { getPrompts, savePrompts } from './services/storage';
@@ -20,6 +22,8 @@ const App: React.FC = () => {
     tag: undefined
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   // Load Data
   useEffect(() => {
@@ -90,31 +94,41 @@ const App: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBulkUploadFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Store the file and open the options dialog
+    setPendingFile(file);
+    setIsBulkUploadDialogOpen(true);
+
+    // Reset input
+    e.target.value = '';
+  };
+
+  const handleBulkUploadConfirm = async (options: BulkUploadOptions) => {
+    if (!pendingFile) return;
+
     try {
-      const text = await file.text();
+      const text = await pendingFile.text();
       const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
       if (lines.length === 0) {
         alert('No prompts found in file.');
+        setIsBulkUploadDialogOpen(false);
+        setPendingFile(null);
         return;
       }
-
-      const confirmed = window.confirm(`Import ${lines.length} prompts from "${file.name}"?`);
-      if (!confirmed) return;
 
       const now = Date.now();
       const newPrompts: Prompt[] = lines.map((line, index) => ({
         id: crypto.randomUUID(),
         title: `Imported Prompt ${index + 1}`,
         content: line,
-        description: '',
-        category: Category.OTHER,
-        model: AiModel.GEMINI_2_5_FLASH,
-        tags: [],
+        description: options.description,
+        category: options.category,
+        model: options.model,
+        tags: options.tags,
         createdAt: now + index,
         updatedAt: now + index,
         isFavorite: false
@@ -127,8 +141,14 @@ const App: React.FC = () => {
       alert('Failed to read file. Please try again.');
     }
 
-    // Reset input
-    e.target.value = '';
+    // Close dialog and reset
+    setIsBulkUploadDialogOpen(false);
+    setPendingFile(null);
+  };
+
+  const handleBulkUploadCancel = () => {
+    setIsBulkUploadDialogOpen(false);
+    setPendingFile(null);
   };
 
   // Filtering Logic
@@ -166,7 +186,7 @@ const App: React.FC = () => {
 
         {/* Top Bar */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-
+          <Badge color="blue"> Test</Badge>
           <div className="relative flex-1 max-w-xl mt-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text-dim" size={18} />
             <input
@@ -191,7 +211,7 @@ const App: React.FC = () => {
             <input
               type="file"
               accept=".txt"
-              onChange={handleBulkUpload}
+              onChange={handleBulkUploadFileSelect}
               className="hidden"
               id="bulk-upload-input"
             />
@@ -272,12 +292,20 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Modal */}
+      {/* Modals */}
       {isFormOpen && (
         <PromptForm
           initialData={editingPrompt || undefined}
           onSave={handleSave}
           onCancel={() => setIsFormOpen(false)}
+          availableTags={Array.from(new Set(prompts.flatMap(p => p.tags)))}
+        />
+      )}
+
+      {isBulkUploadDialogOpen && (
+        <BulkUploadDialog
+          onConfirm={handleBulkUploadConfirm}
+          onCancel={handleBulkUploadCancel}
           availableTags={Array.from(new Set(prompts.flatMap(p => p.tags)))}
         />
       )}

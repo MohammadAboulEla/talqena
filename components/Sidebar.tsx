@@ -38,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onSelectCate
           </div>
 
           {/* Navigation */}
-          <div className="space-y-1 w-full">
+          <div className="space-y-1 w-full px-1">
             {categoriesWithIcons.map((item) => (
               <button
                 key={item.value}
@@ -48,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ selectedCategory, onSelectCate
                   ${selectedCategory === item.value
                     ? 'bg-theme-element text-theme-text'
                     : 'text-theme-text-dim hover:bg-theme-element hover:text-theme-text'}
-                  ${collapsed ? 'justify-center px-0 w-10 h-10 mx-auto' : ''}
+                  ${collapsed ? 'justify-center px-0 w-8 h-8 mx-auto' : ''}
                 `}
                 title={collapsed ? item.name : undefined}
               >

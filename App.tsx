@@ -4,6 +4,7 @@ import { PromptCard } from './components/PromptCard';
 import { PromptForm } from './components/PromptForm';
 import { BulkUploadDialog, BulkUploadOptions } from './components/BulkUploadDialog';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { SettingsDialog } from './components/SettingsDialog';
 import { Toast } from './components/Toast';
 import { Button } from './components/Button';
 import { Prompt, Category, AiModel, PromptFilter } from './types';
@@ -27,6 +28,8 @@ const App: React.FC = () => {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
   // Load Data
   useEffect(() => {
@@ -148,7 +151,7 @@ const App: React.FC = () => {
       }));
 
       setPrompts([...newPrompts, ...prompts]);
-      alert(`Successfully imported ${newPrompts.length} prompts!`);
+      // alert(`Successfully imported ${newPrompts.length} prompts!`);
     } catch (error) {
       console.error('Error reading file:', error);
       alert('Failed to read file. Please try again.');
@@ -162,6 +165,22 @@ const App: React.FC = () => {
   const handleBulkUploadCancel = () => {
     setIsBulkUploadDialogOpen(false);
     setPendingFile(null);
+  };
+
+  const handleDeleteAllPrompts = () => {
+    setIsSettingsOpen(false);
+    setShowDeleteAllConfirm(true);
+  };
+
+  const confirmDeleteAll = () => {
+    setPrompts([]);
+    localStorage.removeItem('talqena_prompts_v1');
+    setShowDeleteAllConfirm(false);
+    setToastMessage('All prompts deleted successfully');
+  };
+
+  const cancelDeleteAll = () => {
+    setShowDeleteAllConfirm(false);
   };
 
   // Filtering Logic
@@ -246,7 +265,11 @@ const App: React.FC = () => {
 
             <div className="h-8 w-px bg-theme-border mx-1 hidden md:block"></div>
 
-            <button className="p-2 text-theme-text-dim hover:text-theme-text hover:bg-theme-element rounded-lg transition-colors relative">
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 text-theme-text-dim hover:text-theme-text hover:bg-theme-element rounded-lg transition-colors relative"
+              title="Settings"
+            >
               <div className="absolute top-2 right-2 w-2 h-2 bg-yellow-500 rounded-full border-2 border-theme-bg"></div>
               <SlidersHorizontal size={20} />
             </button>
@@ -339,6 +362,26 @@ const App: React.FC = () => {
           message={toastMessage}
           type="success"
           onClose={() => setToastMessage(null)}
+        />
+      )}
+
+      {isSettingsOpen && (
+        <SettingsDialog
+          onClose={() => setIsSettingsOpen(false)}
+          onDeleteAllPrompts={handleDeleteAllPrompts}
+          promptCount={prompts.length}
+        />
+      )}
+
+      {showDeleteAllConfirm && (
+        <ConfirmDialog
+          title="Delete All Prompts"
+          message={`Are you sure you want to delete all ${prompts.length} prompts? This action cannot be undone.`}
+          confirmText="Delete All"
+          cancelText="Cancel"
+          onConfirm={confirmDeleteAll}
+          onCancel={cancelDeleteAll}
+          variant="danger"
         />
       )}
     </div>

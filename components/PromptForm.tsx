@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Prompt, Category, AiModel } from '../types';
-import { CATEGORIES, MODELS, MAX_IMAGE_SIZE_BYTES } from '../constants';
+import { Prompt, Category } from '../types';
+import { CATEGORIES, MAX_IMAGE_SIZE_BYTES } from '../constants';
 import { Button } from './Button';
 import { fileToBase64 } from '../services/storage';
 import { enhancePromptContent } from '../services/gemini';
@@ -18,7 +18,6 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
   const [content, setContent] = useState(initialData?.content || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [category, setCategory] = useState<Category>(initialData?.category || Category.OTHER);
-  const [model, setModel] = useState<AiModel>(initialData?.model || AiModel.GEMINI_2_5_FLASH);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [imageUrl, setImageUrl] = useState<string | undefined>(initialData?.imageUrl);
@@ -112,7 +111,6 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
       content,
       description,
       category,
-      model,
       tags: finalTags,
       imageUrl,
       isFavorite: initialData?.isFavorite || false
@@ -141,14 +139,13 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
           {/* Title & Category */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-theme-text-dim">Title</label>
+              <label className="block text-sm font-medium text-theme-text-dim">Title (Optional)</label>
               <input
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                placeholder="e.g., Python Script Debugger"
+                placeholder="e.g., My Amazing Prompt"
                 className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent focus:border-transparent outline-none transition-all"
-                required
               />
             </div>
             <div className="space-y-2">
@@ -200,16 +197,6 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
 
           {/* Model & Tags */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-theme-text-dim">Tested With Model</label>
-              <select
-                value={model}
-                onChange={e => setModel(e.target.value as AiModel)}
-                className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none"
-              >
-                {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-theme-text-dim">Tags (Press Enter)</label>
               <div className="relative">

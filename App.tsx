@@ -7,7 +7,7 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 import { SettingsDialog } from './components/SettingsDialog';
 import { Toast } from './components/Toast';
 import { Button } from './components/Button';
-import { Prompt, Category, AiModel, PromptFilter } from './types';
+import { Prompt, PromptFilter } from './types';
 import { getPrompts, savePrompts } from './services/storage';
 import { Search, Plus, SlidersHorizontal, Star, Menu, X, Upload } from 'lucide-react';
 
@@ -19,7 +19,6 @@ const App: React.FC = () => {
   const [filters, setFilters] = useState<PromptFilter>({
     search: '',
     category: 'All',
-    model: 'All',
     favoritesOnly: false,
     tag: undefined
   });
@@ -143,7 +142,6 @@ const App: React.FC = () => {
         content: line,
         description: options.description,
         category: options.category,
-        model: options.model,
         tags: options.tags,
         createdAt: now + index,
         updatedAt: now + index,

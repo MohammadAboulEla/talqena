@@ -1,7 +1,6 @@
 import React from 'react';
 import { Prompt, Category } from '../types';
-import { Badge } from './Badge';
-import { Copy, Star, Edit2, Trash2, Image as ImageIcon, ExternalLink, ArrowBigUp, MessageSquare } from 'lucide-react';
+import { Copy, Star, Edit2, Trash2 } from 'lucide-react';
 
 interface PromptCardProps {
   prompt: Prompt;

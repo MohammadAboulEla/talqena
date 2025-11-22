@@ -1,5 +1,5 @@
 import React from 'react';
-import { Category, AiModel } from '../types';
+import { Category } from '../types';
 import { Terminal, BookOpen, Briefcase, Code, PenTool, LayoutGrid, MoreHorizontal, Image as ImageIcon, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 interface SidebarProps {

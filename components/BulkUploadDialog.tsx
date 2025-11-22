@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Category, AiModel } from '../types';
-import { CATEGORIES, MODELS } from '../constants';
+import { Category} from '../types';
+import { CATEGORIES } from '../constants';
 import { Button } from './Button';
 import { X } from 'lucide-react';
 
@@ -12,14 +12,12 @@ interface BulkUploadDialogProps {
 
 export interface BulkUploadOptions {
     category: Category;
-    model: AiModel;
     tags: string[];
     description: string;
 }
 
 export const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({ onConfirm, onCancel, availableTags }) => {
     const [category, setCategory] = useState<Category>(Category.OTHER);
-    const [model, setModel] = useState<AiModel>(AiModel.GEMINI_2_5_FLASH);
     const [tagInput, setTagInput] = useState('');
     const [tags, setTags] = useState<string[]>([]);
     const [description, setDescription] = useState('');
@@ -75,7 +73,6 @@ export const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({ onConfirm, o
 
         onConfirm({
             category,
-            model,
             tags: finalTags,
             description
         });
@@ -115,16 +112,6 @@ export const BulkUploadDialog: React.FC<BulkUploadDialogProps> = ({ onConfirm, o
                                 className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none appearance-none"
                             >
                                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-theme-text-dim">Tested With Model</label>
-                            <select
-                                value={model}
-                                onChange={e => setModel(e.target.value as AiModel)}
-                                className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none"
-                            >
-                                {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                         </div>
                     </div>

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Prompt, Category } from '../types';
 import { CATEGORIES, MAX_IMAGE_SIZE_BYTES } from '../constants';
 import { Button } from './Button';
-import { fileToBase64 } from '../services/storage';
+import { imageStorage } from '../services/imageStorage';
 import { enhancePromptContent } from '../services/gemini';
 import { X, Upload, Wand2, Image as ImageIcon, Trash } from 'lucide-react';
 
 interface PromptFormProps {
   initialData?: Partial<Prompt>;
-  onSave: (prompt: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSave: (prompt: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>, tempImageId?: string) => void;
   onCancel: () => void;
   availableTags: string[];
 }
@@ -21,6 +21,7 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [imageUrl, setImageUrl] = useState<string | undefined>(initialData?.imageUrl);
+  const [tempImageId, setTempImageId] = useState<string | undefined>();
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [selectedTagIndex, setSelectedTagIndex] = useState(-1);
 
@@ -76,8 +77,16 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
     }
 
     try {
-      const base64 = await fileToBase64(file);
-      setImageUrl(base64);
+      // Generate a temporary ID for the image (will be replaced with prompt ID on save)
+      const tempId = `temp_${Date.now()}`;
+
+      // Save to IndexedDB
+      await imageStorage.saveImage(tempId, file);
+
+      // Create Object URL for preview
+      const objectUrl = imageStorage.createObjectURL(file);
+      setImageUrl(objectUrl);
+      setTempImageId(tempId);
     } catch (error) {
       console.error("Error processing image", error);
       alert("Failed to process image.");
@@ -114,7 +123,7 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
       tags: finalTags,
       imageUrl,
       isFavorite: initialData?.isFavorite || false
-    });
+    }, tempImageId);
   };
 
   console.log('Available:', availableTags, 'Filtered:', filteredTags);
@@ -257,7 +266,22 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
               <div className="relative w-full h-48 bg-theme-bg rounded-xl border border-theme-border overflow-hidden group">
                 <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Button variant="danger" onClick={() => setImageUrl(undefined)} icon={<Trash size={14} />}>Remove Image</Button>
+                  <Button
+                    variant="danger"
+                    onClick={async () => {
+                      if (imageUrl) {
+                        imageStorage.revokeObjectURL(imageUrl);
+                      }
+                      if (tempImageId) {
+                        await imageStorage.deleteImage(tempImageId);
+                      }
+                      setImageUrl(undefined);
+                      setTempImageId(undefined);
+                    }}
+                    icon={<Trash size={14} />}
+                  >
+                    Remove Image
+                  </Button>
                 </div>
               </div>
             )}

@@ -9,6 +9,7 @@ import { Toast } from './components/Toast';
 import { Button } from './components/Button';
 import { Prompt, PromptFilter } from './types';
 import { getPrompts, savePrompts } from './services/storage';
+import { imageStorage } from './services/imageStorage';
 import { Search, Plus, SlidersHorizontal, Star, Menu, X, Upload } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -30,10 +31,42 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
-  // Load Data
+  // Load Data and Images
   useEffect(() => {
-    const loaded = getPrompts();
-    setPrompts(loaded);
+    const loadData = async () => {
+      const loaded = getPrompts();
+
+      // Load images from IndexedDB and create Object URLs
+      const promptsWithImages = await Promise.all(
+        loaded.map(async (prompt) => {
+          if (prompt.imageUrl) {
+            try {
+              const blob = await imageStorage.getImage(prompt.id);
+              if (blob) {
+                const objectUrl = imageStorage.createObjectURL(blob);
+                return { ...prompt, imageUrl: objectUrl };
+              }
+            } catch (error) {
+              console.error(`Failed to load image for prompt ${prompt.id}`, error);
+            }
+          }
+          return prompt;
+        })
+      );
+
+      setPrompts(promptsWithImages);
+    };
+
+    loadData();
+
+    // Cleanup Object URLs on unmount
+    return () => {
+      prompts.forEach(p => {
+        if (p.imageUrl) {
+          imageStorage.revokeObjectURL(p.imageUrl);
+        }
+      });
+    };
   }, []);
 
   // Save Data
@@ -44,12 +77,33 @@ const App: React.FC = () => {
   }, [prompts]);
 
   // Handlers
-  const handleSave = (data: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSave = async (data: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>, tempImageId?: string) => {
     const now = Date.now();
     let newPrompts;
+    let promptId: string;
 
     if (editingPrompt) {
       // Update
+      promptId = editingPrompt.id;
+
+      // If image changed, handle the image in IndexedDB
+      if (data.imageUrl && data.imageUrl !== editingPrompt.imageUrl) {
+        // New image uploaded, need to move from temp to permanent ID
+        const tempId = `temp_${data.imageUrl.split('/').pop()}`;
+        try {
+          const blob = await imageStorage.getImage(tempId);
+          if (blob) {
+            await imageStorage.saveImage(promptId, blob);
+            await imageStorage.deleteImage(tempId);
+          }
+        } catch (error) {
+          console.error('Error updating image:', error);
+        }
+      } else if (!data.imageUrl && editingPrompt.imageUrl) {
+        // Image was removed
+        await imageStorage.deleteImage(promptId);
+      }
+
       newPrompts = prompts.map(p => p.id === editingPrompt.id ? {
         ...p,
         ...data,
@@ -57,8 +111,23 @@ const App: React.FC = () => {
       } : p);
     } else {
       // Create
+      promptId = crypto.randomUUID();
+
+      // If there's an image, move it from temp to permanent ID
+      if (data.imageUrl && tempImageId) {
+        try {
+          const blob = await imageStorage.getImage(tempImageId);
+          if (blob) {
+            await imageStorage.saveImage(promptId, blob);
+            await imageStorage.deleteImage(tempImageId);
+          }
+        } catch (error) {
+          console.error('Error saving image:', error);
+        }
+      }
+
       const newPrompt: Prompt = {
-        id: crypto.randomUUID(),
+        id: promptId,
         createdAt: now,
         updatedAt: now,
         ...data
@@ -75,8 +144,15 @@ const App: React.FC = () => {
     setDeleteConfirmId(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteConfirmId) return;
+
+    // Delete associated image from IndexedDB
+    try {
+      await imageStorage.deleteImage(deleteConfirmId);
+    } catch (error) {
+      console.error('Error deleting image:', error);
+    }
 
     const newPrompts = prompts.filter(p => p.id !== deleteConfirmId);
     setPrompts(newPrompts);
@@ -170,7 +246,17 @@ const App: React.FC = () => {
     setShowDeleteAllConfirm(true);
   };
 
-  const confirmDeleteAll = () => {
+  const confirmDeleteAll = async () => {
+    // Delete all images from IndexedDB
+    try {
+      const allImageIds = await imageStorage.getAllImageIds();
+      for (const id of allImageIds) {
+        await imageStorage.deleteImage(id);
+      }
+    } catch (error) {
+      console.error('Error deleting images:', error);
+    }
+
     setPrompts([]);
     localStorage.removeItem('talqena_prompts_v1');
     setShowDeleteAllConfirm(false);

@@ -15,7 +15,7 @@ export interface Prompt {
   description?: string;
   category: Category;
   tags: string[];
-  imageUrl?: string; // Base64 string
+  imageUrl?: string; // Object URL generated from IndexedDB Blob
   createdAt: number;
   updatedAt: number;
   isFavorite: boolean;

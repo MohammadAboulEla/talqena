@@ -32,10 +32,10 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   };
 
   return (
-    <div className="group relative bg-theme-card border border-theme-border rounded-xl p-5 hover:border-theme-accent/50 hover:bg-theme-card transition-all duration-300 flex flex-col h-full shadow-lg">
+    <div className="relative bg-theme-card border border-theme-border rounded-xl p-3 hover:border-theme-accent/50 hover:bg-theme-card_hover transition-all duration-300 flex flex-col h-full shadow-lg">
 
       {/* Header Image/Gradient */}
-      <div className={`-mx-5 -mt-5 mb-4 rounded-t-xl relative overflow-hidden ${prompt.imageUrl ? 'h-32' : 'h-14 bg-gradient-to-br'} ${!prompt.imageUrl ? getGradient(prompt.category) : ''}`}>
+      <div className={`-mx-3 -mt-3 mb-4 rounded-t-xl relative overflow-hidden ${prompt.imageUrl ? 'h-32' : 'h-14 bg-gradient-to-br'} ${!prompt.imageUrl ? getGradient(prompt.category) : ''}`}>
         {prompt.imageUrl && (
           <img src={prompt.imageUrl} alt={prompt.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
         )}
@@ -77,7 +77,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="pt-4 border-t border-theme-border flex items-center justify-between mt-auto">
+      <div className="pt-1 border-t border-theme-border flex items-center justify-between mt-auto">
         <div className="flex items-center gap-4 text-theme-text-dim">
           {/* Stats removed per user request */}
         </div>
@@ -105,6 +105,6 @@ const getGradient = (cat: Category) => {
     case Category.ART: return 'from-purple-600 to-pink-500';
     case Category.WRITING: return 'from-emerald-600 to-teal-500';
     case Category.BUSINESS: return 'from-orange-600 to-amber-500';
-    default: return 'from-slate-700 to-slate-600';
+    default: return 'from-slate-700 to-slate-500';
   }
 };

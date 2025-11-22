@@ -10,9 +10,10 @@ interface PromptFormProps {
   initialData?: Partial<Prompt>;
   onSave: (prompt: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
+  availableTags: string[];
 }
 
-export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onCancel }) => {
+export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onCancel, availableTags }) => {
   const [title, setTitle] = useState(initialData?.title || '');
   const [content, setContent] = useState(initialData?.content || '');
   const [description, setDescription] = useState(initialData?.description || '');
@@ -22,15 +23,44 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [imageUrl, setImageUrl] = useState<string | undefined>(initialData?.imageUrl);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [selectedTagIndex, setSelectedTagIndex] = useState(-1);
 
-  const handleAddTag = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+  // Filter available tags based on input
+  // Filter available tags based on input
+  const filteredTags = React.useMemo(() => {
+    if (!tagInput.trim()) return [];
+    return availableTags.filter(t =>
+      t.toLowerCase().includes(tagInput.toLowerCase()) && !tags.includes(t)
+    );
+  }, [tagInput, availableTags, tags]);
+
+  useEffect(() => {
+    setSelectedTagIndex(-1);
+  }, [tagInput]);
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      if (!tags.includes(tagInput.trim())) {
-        setTags([...tags, tagInput.trim()]);
+      if (selectedTagIndex >= 0 && filteredTags[selectedTagIndex]) {
+        addTag(filteredTags[selectedTagIndex]);
+      } else if (tagInput.trim()) {
+        addTag(tagInput.trim());
       }
-      setTagInput('');
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedTagIndex(prev => Math.min(prev + 1, filteredTags.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedTagIndex(prev => Math.max(prev - 1, -1));
     }
+  };
+
+  const addTag = (tag: string) => {
+    if (!tags.includes(tag)) {
+      setTags([...tags, tag]);
+    }
+    setTagInput('');
+    setSelectedTagIndex(-1);
   };
 
   const removeTag = (tagToRemove: string) => {
@@ -70,17 +100,26 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Auto-save pending tag if user didn't press Enter
+    const finalTags = [...tags];
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      finalTags.push(tagInput.trim());
+    }
+
     onSave({
       title,
       content,
       description,
       category,
       model,
-      tags,
+      tags: finalTags,
       imageUrl,
       isFavorite: initialData?.isFavorite || false
     });
   };
+
+  console.log('Available:', availableTags, 'Filtered:', filteredTags);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -173,14 +212,35 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-medium text-theme-text-dim">Tags (Press Enter)</label>
-              <input
-                type="text"
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
-                onKeyDown={handleAddTag}
-                placeholder="Add tag..."
-                className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={handleTagInputKeyDown}
+                  placeholder="Add tag..."
+                  autoComplete="off"
+                  className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none"
+                />
+                {tagInput && filteredTags.length > 0 && (
+                  <div className="absolute z-[100] w-full mt-1 bg-theme-element border border-theme-border rounded-lg shadow-xl shadow-black/50 max-h-40 overflow-y-auto">
+                    {filteredTags.map((tag, index) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => addTag(tag)}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 group ${index === selectedTagIndex
+                          ? 'bg-theme-accent text-white'
+                          : 'text-theme-text hover:bg-theme-accent hover:text-white'
+                          }`}
+                      >
+                        <span className={`text-theme-text-dim ${index === selectedTagIndex ? 'text-white/70' : 'group-hover:text-white/70'}`}>#</span>
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2 mt-2 min-h-[24px]">
                 {tags.map(tag => (
                   <span key={tag} className="inline-flex items-center bg-theme-element border border-theme-border text-theme-text-dim px-2 py-1 rounded-md text-xs">

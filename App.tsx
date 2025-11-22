@@ -209,6 +209,7 @@ const App: React.FC = () => {
           initialData={editingPrompt || undefined}
           onSave={handleSave}
           onCancel={() => setIsFormOpen(false)}
+          availableTags={Array.from(new Set(prompts.flatMap(p => p.tags)))}
         />
       )}
     </div>

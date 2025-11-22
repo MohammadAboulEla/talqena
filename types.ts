@@ -37,4 +37,5 @@ export type PromptFilter = {
   category: Category | 'All';
   model: AiModel | 'All';
   favoritesOnly: boolean;
+  tag?: string;
 };

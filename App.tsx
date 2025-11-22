@@ -5,7 +5,7 @@ import { PromptForm } from './components/PromptForm';
 import { Button } from './components/Button';
 import { Prompt, Category, AiModel, PromptFilter } from './types';
 import { getPrompts, savePrompts } from './services/storage';
-import { Search, Plus, SlidersHorizontal, Star, Menu } from 'lucide-react';
+import { Search, Plus, SlidersHorizontal, Star, Menu, X } from 'lucide-react';
 
 const App: React.FC = () => {
   // State
@@ -16,7 +16,8 @@ const App: React.FC = () => {
     search: '',
     category: 'All',
     model: 'All',
-    favoritesOnly: false
+    favoritesOnly: false,
+    tag: undefined
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
@@ -97,8 +98,9 @@ const App: React.FC = () => {
         p.tags.some(t => t.toLowerCase().includes(filters.search.toLowerCase()));
       const matchesCategory = filters.category === 'All' || p.category === filters.category;
       const matchesFavorite = !filters.favoritesOnly || p.isFavorite;
+      const matchesTag = !filters.tag || p.tags.includes(filters.tag);
 
-      return matchesSearch && matchesCategory && matchesFavorite;
+      return matchesSearch && matchesCategory && matchesFavorite && matchesTag;
     });
   }, [prompts, filters]);
 
@@ -172,7 +174,16 @@ const App: React.FC = () => {
         {/* Stats / Info */}
         <div className="mb-6 flex items-center text-sm text-slate-500 gap-4">
           <span>{filteredPrompts.length} Prompts found</span>
+          <span>{filteredPrompts.length} Prompts found</span>
           {filters.category !== 'All' && <span className="flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-slate-500"></div> Category: {filters.category}</span>}
+          {filters.tag && (
+            <button
+              onClick={() => setFilters({ ...filters, tag: undefined })}
+              className="flex items-center gap-1 px-2 py-0.5 bg-theme-accent/10 text-theme-accent rounded-full hover:bg-theme-accent/20 transition-colors"
+            >
+              Tag: #{filters.tag} <X size={12} />
+            </button>
+          )}
         </div>
 
         {/* Grid */}
@@ -186,6 +197,7 @@ const App: React.FC = () => {
                 onDelete={handleDelete}
                 onToggleFavorite={handleToggleFavorite}
                 onCopy={handleCopy}
+                onSelectTag={(tag) => setFilters({ ...filters, tag })}
               />
             ))}
           </div>

@@ -22,7 +22,7 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [imageUrl, setImageUrl] = useState<string | undefined>(initialData?.imageUrl);
   const [isEnhancing, setIsEnhancing] = useState(false);
-  
+
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
@@ -84,40 +84,40 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
-        
+      <div className="bg-theme-card border border-theme-border rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex justify-between items-center sticky top-0 bg-slate-900 rounded-t-2xl z-10">
-          <h2 className="text-2xl font-bold text-white">
+        <div className="p-6 border-b border-theme-border flex justify-between items-center sticky top-0 bg-theme-card rounded-t-2xl z-10">
+          <h2 className="text-2xl font-bold text-theme-text">
             {initialData?.id ? 'Edit Prompt' : 'New Prompt'}
           </h2>
-          <button onClick={onCancel} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onCancel} className="text-theme-text-dim hover:text-theme-text transition-colors">
             <X size={24} />
           </button>
         </div>
 
         {/* Scrollable Content */}
         <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
-          
+
           {/* Title & Category */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-400">Title</label>
+              <label className="block text-sm font-medium text-theme-text-dim">Title</label>
               <input
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 placeholder="e.g., Python Script Debugger"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all"
+                className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent focus:border-transparent outline-none transition-all"
                 required
               />
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-400">Category</label>
+              <label className="block text-sm font-medium text-theme-text-dim">Category</label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as Category)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent-500 outline-none appearance-none"
+                className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none appearance-none"
               >
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -127,12 +127,12 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
           {/* Content */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <label className="block text-sm font-medium text-slate-400">Prompt Content</label>
+              <label className="block text-sm font-medium text-theme-text-dim">Prompt Content</label>
               <button
                 type="button"
                 onClick={handleEnhance}
                 disabled={isEnhancing || !content}
-                className="flex items-center text-xs text-accent-400 hover:text-accent-300 disabled:opacity-50 transition-colors"
+                className="flex items-center text-xs text-theme-accent hover:text-accent-300 disabled:opacity-50 transition-colors"
               >
                 <Wand2 size={14} className={`mr-1 ${isEnhancing ? 'animate-spin' : ''}`} />
                 {isEnhancing ? 'Enhancing...' : 'Enhance with Gemini'}
@@ -142,50 +142,50 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
               value={content}
               onChange={e => setContent(e.target.value)}
               placeholder="Type your prompt here..."
-              className="w-full h-40 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-accent-500 outline-none font-mono text-sm leading-relaxed resize-y"
+              className="w-full h-40 bg-theme-element border border-theme-border rounded-lg px-4 py-3 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none font-mono text-sm leading-relaxed resize-y"
               required
             />
           </div>
 
           {/* Description (Optional) */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-400">Description / Usage Notes (Optional)</label>
+            <label className="block text-sm font-medium text-theme-text-dim">Description / Usage Notes (Optional)</label>
             <input
               type="text"
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Brief context on how to use this..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent-500 outline-none"
+              className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none"
             />
           </div>
 
           {/* Model & Tags */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-400">Tested With Model</label>
+              <label className="block text-sm font-medium text-theme-text-dim">Tested With Model</label>
               <select
                 value={model}
                 onChange={e => setModel(e.target.value as AiModel)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent-500 outline-none"
+                className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none"
               >
-                 {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
+                {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-slate-400">Tags (Press Enter)</label>
+              <label className="block text-sm font-medium text-theme-text-dim">Tags (Press Enter)</label>
               <input
                 type="text"
                 value={tagInput}
                 onChange={e => setTagInput(e.target.value)}
                 onKeyDown={handleAddTag}
                 placeholder="Add tag..."
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-accent-500 outline-none"
+                className="w-full bg-theme-element border border-theme-border rounded-lg px-4 py-2.5 text-theme-text focus:ring-2 focus:ring-theme-accent outline-none"
               />
               <div className="flex flex-wrap gap-2 mt-2 min-h-[24px]">
                 {tags.map(tag => (
-                  <span key={tag} className="inline-flex items-center bg-slate-700 text-slate-200 px-2 py-1 rounded-md text-xs">
+                  <span key={tag} className="inline-flex items-center bg-theme-element border border-theme-border text-theme-text-dim px-2 py-1 rounded-md text-xs">
                     #{tag}
-                    <button onClick={() => removeTag(tag)} className="ml-1 text-slate-400 hover:text-white"><X size={12}/></button>
+                    <button onClick={() => removeTag(tag)} className="ml-1 text-theme-text-dim hover:text-theme-text"><X size={12} /></button>
                   </span>
                 ))}
               </div>
@@ -194,20 +194,20 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
 
           {/* Image Upload */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-400">Example Image (Optional)</label>
+            <label className="block text-sm font-medium text-theme-text-dim">Example Image (Optional)</label>
             {!imageUrl ? (
-              <div className="border-2 border-dashed border-slate-700 rounded-xl p-6 flex flex-col items-center justify-center hover:border-accent-500 hover:bg-slate-800/50 transition-all group cursor-pointer relative">
-                <input 
-                  type="file" 
-                  accept="image/*" 
+              <div className="border-2 border-dashed border-theme-border rounded-xl p-6 flex flex-col items-center justify-center hover:border-theme-accent hover:bg-theme-element/50 transition-all group cursor-pointer relative">
+                <input
+                  type="file"
+                  accept="image/*"
                   onChange={handleImageUpload}
                   className="absolute inset-0 opacity-0 cursor-pointer"
                 />
-                <Upload className="text-slate-500 group-hover:text-accent-400 mb-2 transition-colors" size={24} />
-                <p className="text-sm text-slate-400 group-hover:text-slate-200">Click to upload example (max 500KB)</p>
+                <Upload className="text-theme-text-dim group-hover:text-theme-accent mb-2 transition-colors" size={24} />
+                <p className="text-sm text-theme-text-dim group-hover:text-theme-text">Click to upload example (max 500KB)</p>
               </div>
             ) : (
-              <div className="relative w-full h-48 bg-slate-950 rounded-xl border border-slate-700 overflow-hidden group">
+              <div className="relative w-full h-48 bg-theme-bg rounded-xl border border-theme-border overflow-hidden group">
                 <img src={imageUrl} alt="Preview" className="w-full h-full object-contain" />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Button variant="danger" onClick={() => setImageUrl(undefined)} icon={<Trash size={14} />}>Remove Image</Button>
@@ -219,7 +219,7 @@ export const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSave, onC
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-slate-800 flex justify-end gap-3 bg-slate-900 rounded-b-2xl sticky bottom-0">
+        <div className="p-6 border-t border-theme-border flex justify-end gap-3 bg-theme-card rounded-b-2xl sticky bottom-0">
           <Button variant="secondary" onClick={onCancel}>Cancel</Button>
           <Button variant="primary" onClick={handleSubmit}>Save Prompt</Button>
         </div>

@@ -12,11 +12,11 @@ export const Badge: React.FC<BadgeProps> = ({ children, color = 'gray', onClick 
     purple: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     green: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     orange: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-    gray: "bg-slate-700/50 text-slate-400 border-slate-600/50",
+    gray: "bg-theme-element text-theme-text-dim border-theme-border",
   };
 
   return (
-    <span 
+    <span
       onClick={onClick}
       className={`
         inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border

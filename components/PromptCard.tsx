@@ -1,7 +1,7 @@
 import React from 'react';
 import { Prompt, Category } from '../types';
 import { Badge } from './Badge';
-import { Copy, Star, Edit2, Trash2, Image as ImageIcon, ExternalLink } from 'lucide-react';
+import { Copy, Star, Edit2, Trash2, Image as ImageIcon, ExternalLink, ArrowBigUp, MessageSquare } from 'lucide-react';
 
 interface PromptCardProps {
   prompt: Prompt;
@@ -11,16 +11,16 @@ interface PromptCardProps {
   onCopy: (text: string) => void;
 }
 
-export const PromptCard: React.FC<PromptCardProps> = ({ 
-  prompt, 
-  onEdit, 
-  onDelete, 
+export const PromptCard: React.FC<PromptCardProps> = ({
+  prompt,
+  onEdit,
+  onDelete,
   onToggleFavorite,
   onCopy
 }) => {
-  
+
   const getCategoryColor = (cat: Category) => {
-    switch(cat) {
+    switch (cat) {
       case Category.CODING: return 'blue';
       case Category.ART: return 'purple';
       case Category.WRITING: return 'green';
@@ -30,81 +30,75 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   };
 
   return (
-    <div className="group relative bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-accent-500/50 hover:bg-slate-800 transition-all duration-300 flex flex-col h-full shadow-lg">
-      
-      {/* Header */}
+    <div className="group relative bg-theme-card border border-theme-border rounded-xl p-5 hover:border-theme-accent/50 hover:bg-theme-card transition-all duration-300 flex flex-col h-full shadow-lg">
+
+      {/* Header Image/Gradient */}
+      <div className={`h-32 -mx-5 -mt-5 mb-4 rounded-t-xl relative overflow-hidden ${!prompt.imageUrl ? getGradient(prompt.category) : ''}`}>
+        {prompt.imageUrl && (
+          <img src={prompt.imageUrl} alt={prompt.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+        )}
+        <div className="absolute top-3 right-3">
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(prompt.id); }}
+            className={`p-2 rounded-full backdrop-blur-md transition-all ${prompt.isFavorite ? 'bg-yellow-400/20 text-yellow-400' : 'bg-black/30 text-white hover:bg-black/50'}`}
+          >
+            <Star size={16} fill={prompt.isFavorite ? "currentColor" : "none"} />
+          </button>
+        </div>
+      </div>
+
       <div className="flex justify-between items-start mb-3">
-        <div className="flex-1 min-w-0 pr-4">
-           <div className="flex items-center gap-2 mb-1">
-              <Badge color={getCategoryColor(prompt.category)}>{prompt.category}</Badge>
-              <span className="text-xs text-slate-500 font-mono">{prompt.model}</span>
-           </div>
-           <h3 className="text-lg font-semibold text-white truncate group-hover:text-accent-400 transition-colors">
-             {prompt.title}
-           </h3>
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${getCategoryColor(prompt.category)} bg-opacity-10 border border-opacity-20`}>
+            {prompt.category}
+          </span>
         </div>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onToggleFavorite(prompt.id); }}
-          className={`p-1.5 rounded-lg transition-colors ${prompt.isFavorite ? 'text-yellow-400 bg-yellow-400/10' : 'text-slate-500 hover:bg-slate-700 hover:text-slate-300'}`}
-        >
-          <Star size={18} fill={prompt.isFavorite ? "currentColor" : "none"} />
-        </button>
       </div>
 
-      {/* Image Preview (if exists) */}
-      {prompt.imageUrl && (
-        <div className="mb-4 w-full h-32 overflow-hidden rounded-lg border border-slate-700/50 bg-slate-900/50 relative">
-           <img src={prompt.imageUrl} alt="Prompt example" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-           <div className="absolute top-2 right-2 bg-black/60 rounded p-1">
-             <ImageIcon size={12} className="text-white" />
-           </div>
-        </div>
-      )}
+      <h3 className="text-lg font-bold text-theme-text mb-2 line-clamp-1 group-hover:text-theme-accent transition-colors">{prompt.title}</h3>
 
-      {/* Description or truncated content */}
-      <div className="flex-grow">
-        <p className="text-slate-400 text-sm line-clamp-3 mb-4 leading-relaxed">
-          {prompt.description || prompt.content}
-        </p>
-      </div>
+      <p className="text-theme-text-dim text-sm mb-4 line-clamp-2 flex-grow leading-relaxed">
+        {prompt.description || prompt.content}
+      </p>
 
       {/* Tags */}
-      {prompt.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {prompt.tags.slice(0, 3).map(tag => (
-            <span key={tag} className="text-[10px] bg-slate-900 text-slate-400 px-2 py-0.5 rounded border border-slate-700">#{tag}</span>
-          ))}
-          {prompt.tags.length > 3 && <span className="text-[10px] text-slate-500">+{prompt.tags.length - 3}</span>}
-        </div>
-      )}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {prompt.tags.slice(0, 3).map(tag => (
+          <span key={tag} className="text-xs text-theme-text-dim bg-theme-element px-2 py-1 rounded-md border border-theme-border">
+            #{tag}
+          </span>
+        ))}
+      </div>
 
-      {/* Actions Footer */}
-      <div className="pt-4 border-t border-slate-700/50 flex items-center justify-between mt-auto">
-        <div className="flex gap-2">
-          <button 
-            onClick={() => onCopy(prompt.content)}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-            title="Copy Prompt"
-          >
+      {/* Footer */}
+      <div className="pt-4 border-t border-theme-border flex items-center justify-between mt-auto">
+        <div className="flex items-center gap-4 text-theme-text-dim">
+          {/* Stats removed per user request */}
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button onClick={() => onCopy(prompt.content)} className="p-1.5 text-theme-text-dim hover:text-theme-text hover:bg-theme-border rounded-lg transition-colors" title="Copy">
             <Copy size={16} />
           </button>
-          <button 
-            onClick={() => onEdit(prompt)}
-            className="p-2 text-slate-400 hover:text-accent-400 hover:bg-slate-700 rounded-lg transition-colors"
-            title="Edit"
-          >
+          <button onClick={() => onEdit(prompt)} className="p-1.5 text-theme-text-dim hover:text-theme-text hover:bg-theme-border rounded-lg transition-colors" title="Edit">
             <Edit2 size={16} />
           </button>
+          <button onClick={() => onDelete(prompt.id)} className="p-1.5 text-theme-text-dim hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors" title="Delete">
+            <Trash2 size={16} />
+          </button>
         </div>
-        
-        <button 
-          onClick={() => onDelete(prompt.id)}
-          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-          title="Delete"
-        >
-          <Trash2 size={16} />
-        </button>
       </div>
     </div>
   );
+};
+
+// Helper for gradients
+const getGradient = (cat: Category) => {
+  switch (cat) {
+    case Category.CODING: return 'from-blue-600 to-cyan-500';
+    case Category.ART: return 'from-purple-600 to-pink-500';
+    case Category.WRITING: return 'from-emerald-600 to-teal-500';
+    case Category.BUSINESS: return 'from-orange-600 to-amber-500';
+    default: return 'from-slate-700 to-slate-600';
+  }
 };

@@ -18,8 +18,7 @@ const App: React.FC = () => {
     model: 'All',
     favoritesOnly: false
   });
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   // Load Data
   useEffect(() => {
@@ -104,19 +103,18 @@ const App: React.FC = () => {
   }, [prompts, filters]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
+    <div className="min-h-screen bg-theme-bg text-theme-text flex font-sans">
 
       {/* Sidebar */}
-      <div className={`fixed inset-0 z-40 bg-slate-950/90 md:hidden transition-opacity ${mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}></div>
-      <div className={`md:block fixed z-50 md:z-0 h-full transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <div className={`md:block fixed z-50 md:z-0 h-full`}>
         <Sidebar
           selectedCategory={filters.category}
           onSelectCategory={(c) => {
             setFilters({ ...filters, category: c });
-            setMobileMenuOpen(false);
           }}
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onNewPrompt={openCreate}
         />
       </div>
 
@@ -125,34 +123,48 @@ const App: React.FC = () => {
 
         {/* Top Bar */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4 md:hidden">
-            <button onClick={() => setMobileMenuOpen(true)} className="p-2 text-slate-400 hover:text-white"><Menu /></button>
-            <h1 className="text-xl font-bold">Talqena</h1>
-          </div>
 
-          <div className="relative flex-1 max-w-xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <div className="relative flex-1 max-w-xl mt-2">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-theme-text-dim" size={18} />
             <input
               type="text"
-              placeholder="Search prompts, tags, or content..."
+              placeholder="Search"
               value={filters.search}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:ring-2 focus:ring-accent-500 focus:border-transparent outline-none transition-all shadow-sm"
+              className="w-full bg-theme-element border border-theme-border rounded-xl py-2.5 pl-10 pr-4 text-theme-text focus:ring-2 focus:ring-theme-accent focus:border-transparent outline-none transition-all placeholder-theme-text-dim"
             />
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button onClick={openCreate} icon={<Plus size={18} />}>
-              New Prompt
-            </Button>
+          <div className="flex items-center gap-4">
+
             <button
-              onClick={() => setFilters(f => ({ ...f, favoritesOnly: !f.favoritesOnly }))}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${filters.favoritesOnly ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'}`}
+              onClick={openCreate}
+              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold hover:opacity-90 transition-opacity shadow-lg shadow-purple-500/20"
             >
-              <Star size={18} fill={filters.favoritesOnly ? "currentColor" : "none"} />
-              <span className="hidden sm:inline">Favorites</span>
+              <Plus size={18} className="stroke-[3]" />
+              <span>New Prompt</span>
             </button>
 
+            <button
+              onClick={() => setFilters(f => ({ ...f, favoritesOnly: !f.favoritesOnly }))}
+              className={`p-2 rounded-lg transition-colors ${filters.favoritesOnly ? 'text-yellow-400 bg-yellow-400/10' : 'text-theme-text-dim hover:text-theme-text hover:bg-theme-element'}`}
+              title="Toggle Favorites"
+            >
+              <Star size={20} fill={filters.favoritesOnly ? "currentColor" : "none"} />
+            </button>
+
+            <div className="h-8 w-px bg-theme-border mx-1 hidden md:block"></div>
+
+            <button className="p-2 text-theme-text-dim hover:text-theme-text hover:bg-theme-element rounded-lg transition-colors relative">
+              <div className="absolute top-2 right-2 w-2 h-2 bg-yellow-500 rounded-full border-2 border-theme-bg"></div>
+              <SlidersHorizontal size={20} />
+            </button>
+
+            <button className="p-2 text-theme-text-dim hover:text-theme-text hover:bg-theme-element rounded-lg transition-colors">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center text-black font-bold text-xs">
+                M
+              </div>
+            </button>
 
           </div>
         </header>
